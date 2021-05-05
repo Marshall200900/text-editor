@@ -1,6 +1,6 @@
 import React from 'react';
 import './app.scss';
-import FileExplorer from '../file-explorer';
+import ExpandPanel from '../expand-panel';
 import LeftPanel from '../left-panel';
 import Workspace from '../workspace';
 import MenuBar from '../menubar';
@@ -14,7 +14,7 @@ class App extends React.Component {
                 <MenuBar/>
                 <div className="work-window">
                     <LeftPanel/>
-                    <FileExplorer/>
+                    <ExpandPanel/>
                     <div className="handler">
                         <div className="handler-out"></div>
                     </div>

@@ -7,7 +7,8 @@ import './menubar.scss';
     render(){
         return (
             <div className="menubar">
-                
+                <div className="button">Файл</div>
+                <div className="button">Справка</div>
             </div>
         )
     }

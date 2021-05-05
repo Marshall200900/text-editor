@@ -8,17 +8,30 @@ import { Resizable } from 're-resizable';
 
 export default class Canvas extends React.Component {
 
-    state = {
-        coords: {
-            x1y1: [20, 20],
-            x2y1: [140, 20],
-            x1y2: [20, 140],
-            x2y2: [140, 140],
-        },
 
-        borderMoving: null,
+    static curId = 0;
+
+
+    state = {
+        elements = [
+            {
+                id: 1,
+                coords: {
+                    x1y1: [20, 20],
+                    x2y1: [140, 20],
+                    x1y2: [20, 140],
+                    x2y2: [140, 140],
+                },
+            },
+        ],
+
+
+        
         isElementMoved: false,
+        borderMoving: null,
+        isElementChangingSize: false,
         prevPosition: [],
+        prevCoords: null,
     }
     onCoordsChanged = (coords) => {
         this.setState({coords: coords});
@@ -30,10 +43,13 @@ export default class Canvas extends React.Component {
             <div className='canvas'
                 onMouseMove={this.onMouseMove}
                 onMouseUp={this.onMouseUp}
-                style={{ backgroundImage: `url(${dotNet})` }}
+                style={this.state.isElementChangingSize || this.state.isElementMoved ? { backgroundImage: `url(${dotNet})` } : {}}
             >
                 {/* <img draggable="false" className="noselect" src={dotNet}/> */}
-                <Sticker coords={this.state.coords} onMouseDown={this.onMouseDown}/>
+                <Sticker coords={this.state.coords} 
+                    onMouseDownSticker={this.onMouseDownSticker}
+                    onMouseDownBorder={this.onMouseDownBorder}
+                />
                 
 
             </div>
@@ -41,9 +57,9 @@ export default class Canvas extends React.Component {
     }
    
     onMouseMove = (e) => {
-        const {isElementMoved, prevPosition, borderMoving} = this.state;
+        const {isElementChangingSize, isElementMoved, prevPosition, borderMoving} = this.state;
         
-        if(isElementMoved) {
+        if(isElementChangingSize) {
             let offset = [e.clientX-prevPosition[0], e.clientY-prevPosition[1]];
             
             
@@ -107,18 +123,65 @@ export default class Canvas extends React.Component {
                 
             });
         }
+        else if (isElementMoved) {
+            console.log('here!');
+            let offset = [e.clientX-prevPosition[0], e.clientY-prevPosition[1]];
+            this.setState({prevPosition: [e.clientX, e.clientY]});
+            this.setState(({coords}) => {
+                let newCoords = {
+                    x1y1: [coords.x1y1[0]+offset[0], coords.x1y1[1]+offset[1]],
+                    x1y2: [coords.x1y2[0]+offset[0], coords.x1y2[1]+offset[1]],
+                    x2y1: [coords.x2y1[0]+offset[0], coords.x2y1[1]+offset[1]],
+                    x2y2: [coords.x2y2[0]+offset[0], coords.x2y2[1]+offset[1]],
+                };
+                
+                return {
+                    coords: newCoords,
+                }
+            });
+        }
 
         
     }
-    onMouseDown = (e, border) => {
+    onMouseDownSticker = (e) => {
+        this.setState({isElementMoved: true, prevCoords: this.state.coords});
+        this.setState({prevPosition: [e.clientX, e.clientY]});
+        console.log('onMouseDownSticker');
+    }
+    
+    onMouseDownBorder = (e, border) => {
         //TODO simplify
-        this.setState({isElementMoved: true});
+        this.setState({isElementChangingSize: true});
         this.setState({prevPosition: [e.clientX, e.clientY]});
         this.setState({borderMoving: border});
-
+        console.log('onMouseDownBorder');
+        e.stopPropagation();
     }
     onMouseUp = () => {
-        this.setState({isElementMoved: false});
+        
+        if(this.state.isElementMoved){
+            
+            this.setState(({coords}) => {
+                let newCoords = {};
+                newCoords.x1y1 = [coords.x1y1[0] - coords.x1y1[0] % 40 + 20, coords.x1y1[1] - coords.x1y1[1] % 40 + 20];
+                newCoords.x1y2 = [coords.x1y2[0] - coords.x1y2[0] % 40 + 20, coords.x1y2[1] - coords.x1y2[1] % 40 + 20];
+                newCoords.x2y1 = [coords.x2y1[0] - coords.x2y1[0] % 40 + 20, coords.x2y1[1] - coords.x2y1[1] % 40 + 20];
+                newCoords.x2y2 = [coords.x2y2[0] - coords.x2y2[0] % 40 + 20, coords.x2y2[1] - coords.x2y2[1] % 40 + 20];
+
+                
+                return {
+                    coords: newCoords,
+                    isElementMoved: false,
+                }
+            });
+
+
+
+        }
+            
+
+        this.setState({isElementChangingSize: false, isElementMoved: false});
+
     }
 
 }

@@ -1,7 +1,7 @@
 .sticker {
     position: absolute;
-    background-color: #8CAAFF;
-
+    background-color: #BEF3CA;
+    
     .border {
         position: relative;
     }
@@ -25,4 +25,21 @@
         height: 6px;
         cursor:n-resize;
     }
+}
+.text-input {
+    position: absolute;
+    background: transparent;
+    box-sizing: border-box;
+    margin-top: 7.5px;
+    width: calc(100% - 15px);
+    height: calc(100% - 15px);
+    left: 7px;
+    outline: none;
+    resize: none;
+    border: none;
+    font-family: Raleway, serif;
+    color: black;
+    font-weight: 600;    
+    font-size: 1rem;
+
 }

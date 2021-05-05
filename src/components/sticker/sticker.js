@@ -4,34 +4,34 @@ import './sticker.scss';
 
 export default class Sticker extends React.Component {
 
-    
 
-    constructor(props) {
-        super(props);
-    }
+    
+   
 
     render() {
         return (
             <div className="sticker" 
                 style={this.setCoordinates(this.props.coords)}
-                
-                >
+                onMouseDown={this.props.onMouseDownSticker}
+            >
+                <textarea className="text-input"/>
+
                 <div className="border left-border" 
                         style={this.setBorder(this.props.coords, 'left-border')}
-                        onMouseDown={(e) => this.props.onMouseDown(e, 'left-border')}
+                        onMouseDown={(e) => this.props.onMouseDownBorder(e, 'left-border')}
                         />
                 <div className="border right-border" 
                         style={this.setBorder(this.props.coords, 'right-border')}
-                        onMouseDown={(e) => this.props.onMouseDown(e, 'right-border')}
+                        onMouseDown={(e) => this.props.onMouseDownBorder(e, 'right-border')}
                         />
                 <div className="border top-border" 
                     style={this.setBorder(this.props.coords, 'top-border')}
-                    onMouseDown={(e) => this.props.onMouseDown(e, 'top-border')}
+                    onMouseDown={(e) => this.props.onMouseDownBorder(e, 'top-border')}
 
                         />
                 <div className="border bottom-border" 
                     style={this.setBorder(this.props.coords, 'bottom-border')}
-                    onMouseDown={(e) => this.props.onMouseDown(e, 'bottom-border')}
+                    onMouseDown={(e) => this.props.onMouseDownBorder(e, 'bottom-border')}
                         />
 
                 

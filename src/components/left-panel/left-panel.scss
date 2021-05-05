@@ -2,4 +2,16 @@
     width: 70px;
     background-color: #CAD9FF;
     flex: 0 0 auto;
+    
+    
+    .button {
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50px;
+    }
+    .button:hover {
+        background-color: #A8BCF0;
+    }
 }
