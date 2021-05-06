@@ -64,7 +64,6 @@ document.addEventListener('mousemove', function(e) {
 document.addEventListener('mouseup', function(e) {
   // Turn off dragging flag when user mouse is up
   isHandlerDragging = false;
-  console.log('mouseup')
 });
 
 

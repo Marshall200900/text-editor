@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { createElement } from 'react';
 
 import './canvas.scss';
 import dotNet from '../../res/dot-net.png';
 
 import Sticker from '../sticker';
-import { Resizable } from 're-resizable';
-
 export default class Canvas extends React.Component {
 
 
@@ -13,9 +11,9 @@ export default class Canvas extends React.Component {
 
 
     state = {
-        elements = [
+        elements: [
             {
-                id: 1,
+                id: 0,
                 coords: {
                     x1y1: [20, 20],
                     x2y1: [140, 20],
@@ -24,12 +22,12 @@ export default class Canvas extends React.Component {
                 },
             },
         ],
-
-
-        
-        isElementMoved: false,
+        elementIdChanging: null,
         borderMoving: null,
+
+        isElementMoved: false,
         isElementChangingSize: false,
+        
         prevPosition: [],
         prevCoords: null,
     }
@@ -39,6 +37,19 @@ export default class Canvas extends React.Component {
 
 
     render() {
+        const {elements} = this.state;
+
+        const listOfElements = elements.map((element) => {
+            const {id} = element;
+            return (
+                <Sticker element={element}
+                    key={id}
+                    onMouseDownSticker={this.onMouseDownSticker}
+                    onMouseDownBorder={this.onMouseDownBorder}
+                />
+            )
+        })
+
         return(
             <div className='canvas'
                 onMouseMove={this.onMouseMove}
@@ -46,10 +57,7 @@ export default class Canvas extends React.Component {
                 style={this.state.isElementChangingSize || this.state.isElementMoved ? { backgroundImage: `url(${dotNet})` } : {}}
             >
                 {/* <img draggable="false" className="noselect" src={dotNet}/> */}
-                <Sticker coords={this.state.coords} 
-                    onMouseDownSticker={this.onMouseDownSticker}
-                    onMouseDownBorder={this.onMouseDownBorder}
-                />
+                {listOfElements}
                 
 
             </div>
@@ -57,11 +65,18 @@ export default class Canvas extends React.Component {
     }
    
     onMouseMove = (e) => {
-        const {isElementChangingSize, isElementMoved, prevPosition, borderMoving} = this.state;
-        
+        const {
+            elements, 
+            isElementChangingSize, 
+            isElementMoved, 
+            prevPosition, 
+            borderMoving, 
+            elementIdChanging
+        } = this.state;
         if(isElementChangingSize) {
             let offset = [e.clientX-prevPosition[0], e.clientY-prevPosition[1]];
-            
+            const coords = elements.find(x => x.id === elementIdChanging).coords;
+
             
             if(Math.abs(offset[1]) >= 40) {
                 this.setState({prevPosition: [e.clientX, e.clientY]});
@@ -79,7 +94,8 @@ export default class Canvas extends React.Component {
                 offset[0] = 0;
             }
 
-            this.setState(({coords}) => {
+            this.setState(() => {
+
                 let newCoords;
                 //TODO simplify
                 switch(borderMoving) {
@@ -114,74 +130,98 @@ export default class Canvas extends React.Component {
                 }
 
                 
-
+                const newElements = [
+                    ...elements.slice(0, elementIdChanging),
+                    {id: elementIdChanging, coords: newCoords},
+                    ...elements.slice(elementIdChanging+1),
+                ];
 
                 
                 return {
-                    coords: newCoords
+                    elements: newElements
                 }
                 
             });
         }
         else if (isElementMoved) {
-            console.log('here!');
+            const coords = elements.find(x => x.id === elementIdChanging).coords;
+
             let offset = [e.clientX-prevPosition[0], e.clientY-prevPosition[1]];
             this.setState({prevPosition: [e.clientX, e.clientY]});
-            this.setState(({coords}) => {
+            this.setState(() => {
                 let newCoords = {
                     x1y1: [coords.x1y1[0]+offset[0], coords.x1y1[1]+offset[1]],
                     x1y2: [coords.x1y2[0]+offset[0], coords.x1y2[1]+offset[1]],
                     x2y1: [coords.x2y1[0]+offset[0], coords.x2y1[1]+offset[1]],
                     x2y2: [coords.x2y2[0]+offset[0], coords.x2y2[1]+offset[1]],
                 };
+                const newElements = [
+                    ...elements.slice(0, elementIdChanging),
+                    {id: elementIdChanging, coords: newCoords},
+                    ...elements.slice(elementIdChanging+1),
+                ];
                 
                 return {
-                    coords: newCoords,
+                    elements: newElements,
                 }
             });
         }
 
         
     }
-    onMouseDownSticker = (e) => {
-        this.setState({isElementMoved: true, prevCoords: this.state.coords});
-        this.setState({prevPosition: [e.clientX, e.clientY]});
+    onMouseDownSticker = (e, id) => {
+        this.setState({
+            isElementMoved: true, 
+            prevCoords: this.state.coords,
+            prevPosition: [e.clientX, e.clientY],
+            elementIdChanging: id,
+        });
         console.log('onMouseDownSticker');
     }
     
-    onMouseDownBorder = (e, border) => {
-        //TODO simplify
-        this.setState({isElementChangingSize: true});
-        this.setState({prevPosition: [e.clientX, e.clientY]});
-        this.setState({borderMoving: border});
+    onMouseDownBorder = (e, id, border) => {
+        
+        this.setState({
+            elementIdChanging: id,
+            isElementChangingSize: true,
+            prevPosition: [e.clientX, e.clientY],
+            borderMoving: border,
+
+        });
         console.log('onMouseDownBorder');
         e.stopPropagation();
+
     }
     onMouseUp = () => {
         
         if(this.state.isElementMoved){
-            
-            this.setState(({coords}) => {
+
+            this.setState(({elements, elementIdChanging}) => {
+                const coords = elements.find(x => x.id === elementIdChanging).coords;
+
                 let newCoords = {};
                 newCoords.x1y1 = [coords.x1y1[0] - coords.x1y1[0] % 40 + 20, coords.x1y1[1] - coords.x1y1[1] % 40 + 20];
                 newCoords.x1y2 = [coords.x1y2[0] - coords.x1y2[0] % 40 + 20, coords.x1y2[1] - coords.x1y2[1] % 40 + 20];
                 newCoords.x2y1 = [coords.x2y1[0] - coords.x2y1[0] % 40 + 20, coords.x2y1[1] - coords.x2y1[1] % 40 + 20];
                 newCoords.x2y2 = [coords.x2y2[0] - coords.x2y2[0] % 40 + 20, coords.x2y2[1] - coords.x2y2[1] % 40 + 20];
-
+                
+                
+                const newElements = [
+                    ...elements.slice(0, elementIdChanging),
+                    {id: elementIdChanging, coords: newCoords},
+                    ...elements.slice(elementIdChanging+1),
+                ];
                 
                 return {
-                    coords: newCoords,
-                    isElementMoved: false,
+                    elements: newElements,
+                    
                 }
             });
-
-
-
         }
-            
-
-        this.setState({isElementChangingSize: false, isElementMoved: false});
-
+        this.setState({
+            isElementMoved: false,
+            isElementChangingSize: false,
+        });
     }
 
 }

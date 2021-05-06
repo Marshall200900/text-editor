@@ -4,37 +4,32 @@ import './sticker.scss';
 
 export default class Sticker extends React.Component {
 
-
+    constructor(props) {
+        super(props);
+    }
     
    
 
     render() {
+        const {id, coords} = this.props.element;
+        const element = this.props.element;
+        const listOfBorders = [
+            this.getBorderJSX(element, 'left-border', 0),
+            this.getBorderJSX(element, 'right-border', 1),
+            this.getBorderJSX(element, 'top-border', 2),
+            this.getBorderJSX(element, 'bottom-border', 3),
+        ];
+        
         return (
             <div className="sticker" 
-                style={this.setCoordinates(this.props.coords)}
-                onMouseDown={this.props.onMouseDownSticker}
+                style={this.setCoordinates(coords)}
+                onMouseDown={(e) => this.props.onMouseDownSticker(e, id)}
             >
                 <textarea className="text-input"/>
 
-                <div className="border left-border" 
-                        style={this.setBorder(this.props.coords, 'left-border')}
-                        onMouseDown={(e) => this.props.onMouseDownBorder(e, 'left-border')}
-                        />
-                <div className="border right-border" 
-                        style={this.setBorder(this.props.coords, 'right-border')}
-                        onMouseDown={(e) => this.props.onMouseDownBorder(e, 'right-border')}
-                        />
-                <div className="border top-border" 
-                    style={this.setBorder(this.props.coords, 'top-border')}
-                    onMouseDown={(e) => this.props.onMouseDownBorder(e, 'top-border')}
+                {listOfBorders}
 
-                        />
-                <div className="border bottom-border" 
-                    style={this.setBorder(this.props.coords, 'bottom-border')}
-                    onMouseDown={(e) => this.props.onMouseDownBorder(e, 'bottom-border')}
-                        />
 
-                
                 {/* TO BE IMPLEMENTED */}
                 {/* <div className="border bottom-border"/>
                 <div className="border bottom-border"/>
@@ -44,9 +39,19 @@ export default class Sticker extends React.Component {
             </div>
         )
     }
+    getBorderJSX = (element, side, keyProp) => {
+        const {coords, id} = element;
+
+        return (
+            <div className={`border ${side}`}
+                key={keyProp}
+                style={this.setBorderParams(coords, side)}
+                onMouseDown={(e) => this.props.onMouseDownBorder(e, id, side)}
+            />
+        )
+    }
     
-    
-    setBorder = (coords, border) => {
+    setBorderParams = (coords, border) => {
         const width = coords.x2y1[0]-coords.x1y1[0];
         const height = coords.x1y2[1]-coords.x1y1[1];
 
