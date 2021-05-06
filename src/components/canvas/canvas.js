@@ -172,7 +172,7 @@ export default class Canvas extends React.Component {
     onMouseDownSticker = (e, id) => {
         this.setState({
             isElementMoved: true, 
-            prevCoords: this.state.coords,
+            prevCoords: this.state.elements.find(x => x.id === id).coords,
             prevPosition: [e.clientX, e.clientY],
             elementIdChanging: id,
         });
@@ -196,15 +196,25 @@ export default class Canvas extends React.Component {
         
         if(this.state.isElementMoved){
 
-            this.setState(({elements, elementIdChanging}) => {
+            this.setState(({elements, elementIdChanging, prevCoords}) => {
                 const coords = elements.find(x => x.id === elementIdChanging).coords;
-
+                console.log(prevCoords);
                 let newCoords = {};
                 newCoords.x1y1 = [coords.x1y1[0] - coords.x1y1[0] % 40 + 20, coords.x1y1[1] - coords.x1y1[1] % 40 + 20];
                 newCoords.x1y2 = [coords.x1y2[0] - coords.x1y2[0] % 40 + 20, coords.x1y2[1] - coords.x1y2[1] % 40 + 20];
                 newCoords.x2y1 = [coords.x2y1[0] - coords.x2y1[0] % 40 + 20, coords.x2y1[1] - coords.x2y1[1] % 40 + 20];
                 newCoords.x2y2 = [coords.x2y2[0] - coords.x2y2[0] % 40 + 20, coords.x2y2[1] - coords.x2y2[1] % 40 + 20];
                 
+                if(
+                    newCoords.x1y1[0] < 20 ||
+                    newCoords.x1y1[1] < 20 ||
+                    newCoords.x2y2[0] > 780 ||
+                    newCoords.x1y2[1] > 780 
+                    )
+                    {
+                        newCoords = prevCoords;
+                    }
+                console.log(newCoords);
                 
                 const newElements = [
                     ...elements.slice(0, elementIdChanging),
