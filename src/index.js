@@ -2,6 +2,9 @@ import React from 'react'
 import { render } from 'react-dom'
 import App from './components/app'
 import './index.scss';
+import { Provider } from 'react-redux';
+import store from './store';
+
 
 const styles = `
     body {
@@ -24,7 +27,11 @@ document.body.appendChild(root)
 
 
 // Now we can render our application into it
-render(<App />, document.getElementById('root'))
+render(<React.StrictMode>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </React.StrictMode>, document.getElementById('root'))
 
 var handler = document.querySelector('.handler');
 var wrapper = handler.closest('.work-window');
