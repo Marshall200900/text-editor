@@ -54,7 +54,7 @@ export default class Sticker extends React.Component {
       const {coords, id} = element;
 
       return (
-          <div className={`border ${side}`}
+          <div className={`sticker-border ${side}`}
               key={keyProp}
               style={this.setBorderParams(coords, side)}
               onMouseDown={(e) => this.props.onMouseDownBorder(e, id, side)}
