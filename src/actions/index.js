@@ -1,37 +1,44 @@
 //change args to ...args
 
-const mouseDownSticker = (event, elementId) => {
+const mouseDownSticker = (globalX, globalY, elementId) => {
   return {
     type: 'MOUSE_DOWN_STICKER',
     payload: {
-      event, elementId
+      globalX,
+      globalY,
+      elementId
     }
   }
 }
 
-const mouseDownElementBorder = (event, elementId, borderName) => {
+const mouseDownElementBorder = (globalX, globalY, elementId, borderName) => {
   return {
     type: 'MOUSE_DOWN_ELEMENT_BORDER',
     payload: {
-      event, elementId, borderName
+      globalX,
+      globalY,
+      elementId, 
+      borderName
     }
   }
 }
 
-const mouseMoveElement = (event) => {
+const mouseMoveElement = (globalX, globalY) => {
   return {
     type: 'MOUSE_MOVE_ELEMENT',
     payload: {
-      event
+      globalX,
+      globalY
     }
   }
 }
 
-const mouseMoveBorderOfElement = (event) => {
+const mouseMoveBorderOfElement = (globalX, globalY) => {
   return {
     type: 'MOUSE_MOVE_BORDER_OF_ELEMENT',
     payload: {
-      event
+      globalX,
+      globalY
     }
   }
 }
@@ -41,18 +48,16 @@ const mouseUp = () => {
     type: 'MOUSE_UP'
   }
 }
-const mouseDownCanvas = (x, y) => {
+const mouseDownCanvas = (canvasX, canvasY) => {
   return {
     type: 'MOUSE_DOWN_CANVAS',
-    payload: {x, y}
+    payload: {canvasX, canvasY}
   }
 }
-const mouseMoveCreatingElement = (x, y) => {
+const mouseMoveCreatingElement = (canvasX, canvasY) => {
   return {
     type: 'MOUSE_MOVE_CREATING_ELEMENT',
-    payload: {
-      x, y
-    }
+    payload: {canvasX, canvasY}
   }
 }
 

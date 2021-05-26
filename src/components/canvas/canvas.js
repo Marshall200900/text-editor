@@ -44,30 +44,32 @@ class Canvas extends React.Component {
       )
   }
   onMouseDown = (e) => {
-    const { isElementMoving, isElementBorderMoving, dispatch } = this.props;
+    const { dispatch } = this.props;
     const rect = e.target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const canvasX = e.clientX - rect.left;
+    const canvasY = e.clientY - rect.top;
     
-    dispatch(mouseDownCanvas(x, y));
+    dispatch(mouseDownCanvas(canvasX, canvasY));
   }
 
 
   onMouseMove = (e) => {
     const { isElementMoving, isElementBorderMoving, isCreatingElement, dispatch } = this.props;
-    
+    const globalX = e.clientX;
+    const globalY = e.clientY;
+
     if(isElementBorderMoving) {
-      dispatch(mouseMoveBorderOfElement(e));
+      dispatch(mouseMoveBorderOfElement(globalX, globalY));
     }
     else if (isElementMoving) {
-      dispatch(mouseMoveElement(e));
+      dispatch(mouseMoveElement(globalX, globalY));
     }
     else if (isCreatingElement) {  
       const rect = e.target.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
       
-      dispatch(mouseMoveCreatingElement(x, y));
+      dispatch(mouseMoveCreatingElement(canvasX, canvasY));
 
 
     }
@@ -75,14 +77,19 @@ class Canvas extends React.Component {
   }
   onMouseDownSticker = (e, id) => {
     const { dispatch } = this.props;
-    dispatch(mouseDownSticker(e, id));
+    const globalX = e.clientX;
+    const globalY = e.clientY;
+
+    dispatch(mouseDownSticker(globalX, globalY, id));
 
     e.stopPropagation();
   }
   
   onMouseDownBorder = (e, id, border) => {
     const { dispatch } = this.props;
-    dispatch(mouseDownElementBorder(e, id, border));
+    const globalX = e.clientX;
+    const globalY = e.clientY;
+    dispatch(mouseDownElementBorder(globalX, globalY, id, border));
 
     e.stopPropagation();
 
