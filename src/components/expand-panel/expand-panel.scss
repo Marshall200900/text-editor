@@ -1,5 +1,8 @@
 .expand-panel {
-    background-color: #E0DADA;
-    width: 200px;
-    // flex: 0 1 auto;
+  background-color: #E0DADA;
+  width: 200px;
+  // flex: 0 1 auto;
+  &.invisible {
+    display: none;
+  }
 }

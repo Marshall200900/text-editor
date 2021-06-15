@@ -21,7 +21,7 @@ export default class Kanban extends React.Component {
   
   
   clickLeftArrow = (e, id) => {
-    const { kanbanData } = this.props.data;
+    const { kanbanData } = this.props.elementState;
     const elementId = kanbanData.findIndex(el => el.id === id);
     const element = {...kanbanData[elementId]};
 
@@ -35,13 +35,13 @@ export default class Kanban extends React.Component {
       ...kanbanData.slice(elementId + 1),
       element,
     ];
-    const newState = {...this.props.data, kanbanData: newElements};
+    const newState = {...this.props.elementState, kanbanData: newElements};
     
     this.props.updateData(newState);
     e.stopPropagation();
   }
   clickRightArrow = (e, id) => {
-    const { kanbanData } = this.props.data;
+    const { kanbanData } = this.props.elementState;
     const elementId = kanbanData.findIndex(el => el.id === id);
     const element = {...kanbanData[elementId]};
 
@@ -71,9 +71,35 @@ export default class Kanban extends React.Component {
       {...element}/>
     )
   }
-
+  componentDidMount = () => {
+    const { kanbanData } = this.props.elementState;
+    if(kanbanData === undefined) {
+      this.props.updateData({...this.props.elementState, kanbanData: [
+        {
+          id: 0,
+          status: 'not started',
+          text: 'do chores'
+        },
+        {
+          id: 1,
+          status: 'in progress',
+          text: 'make a sandwitch'
+        },
+        {
+          id: 2,
+          status: 'done',
+          text: 'have a shower'
+        },
+        {
+          id: 3,
+          status: 'in progress',
+          text: 'buy milk'
+        }]});
+    }
+  }
   render() {
-    const { kanbanData } = this.props.data;
+    const { kanbanData } = this.props.elementState;
+    if(kanbanData === undefined) return null;
     return (
       <div className="kanban">
         <div className="kanban-cols col-notstarted">

@@ -1,28 +1,33 @@
 .sticker {
-    position: absolute;
-    background-color: #BEF3CA;
+  position: absolute;
+  background-color: #BEF3CA;
+  &.selected {
+    border: 3px solid rgb(41, 39, 39);
+    border-radius: 5px;
+  }
+
+
+  .sticker-border {
+      position: relative;
+  }
+  
+  .left-border {
+      width: 6px;
+      left: -3px;
+      cursor: ew-resize;
+  }
+  .right-border {
     
-    .sticker-border {
-        position: relative;
-    }
-    
-    .left-border {
-        width: 6px;
-        left: -3px;
-        cursor: ew-resize;
-    }
-    .right-border {
+      width: 6px;
+      cursor: ew-resize;
+  }
+  .top-border {
+      height: 6px;
+      cursor:n-resize;
       
-        width: 6px;
-        cursor: ew-resize;
-    }
-    .top-border {
-        height: 6px;
-        cursor:n-resize;
-        
-    }
-    .bottom-border {
-        height: 6px;
-        cursor:n-resize;
-    }
+  }
+  .bottom-border {
+      height: 6px;
+      cursor:n-resize;
+  }
 }

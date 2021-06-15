@@ -3,9 +3,6 @@ import React from 'react';
 import './sticker.scss';
 
 export default class Sticker extends React.Component {
-
-
-  
   colors = [
     '#8CAAFF',
     '#E5B5FF',
@@ -21,8 +18,8 @@ export default class Sticker extends React.Component {
   }
 
   render() {
-    const {id, coords} = this.props.element;
-    const element = this.props.element;
+    const { element, selected } = this.props;
+    const {id, coords} = element;
     const listOfBorders = [
         this.getBorderJSX(element, 'left-border', 0),
         this.getBorderJSX(element, 'right-border', 1),
@@ -32,7 +29,7 @@ export default class Sticker extends React.Component {
     const style = this.setCoordinates(coords);
     style.backgroundColor = this.state.color;
     return (
-        <div className="sticker" 
+        <div className={`sticker ${selected ? 'selected': ''}`} 
             style={style}
             onMouseDown={(e) => this.props.onMouseDownSticker(e, id)}
         >

@@ -2,10 +2,11 @@ import React from 'react';
 import './canvas.scss';
 import dotNet from '../../res/dot-net.png';
 import Sticker from '../sticker';
-import TextSticker from '../canvas-components/text-sticker';
 import { connect } from 'react-redux';
-import { createElement, updateElement } from '../../actions';
+import { createElement, deleteElement, selectSticker, updateCanvasRect, updateElement, setCanvasRef } from '../../actions';
 import Kanban from '../canvas-components/kanban';
+import TextSticker from '../canvas-components/text-sticker';
+import Checklist from '../canvas-components/checklist';
 class Canvas extends React.Component {
   state = {
     prevMousePosition: null,
@@ -17,39 +18,71 @@ class Canvas extends React.Component {
     isElementMoving: false,
     isCreatingElement: false,
   }
-  render() {
-      const {  isElementMoving, isElementBorderMoving } = this.state;
-      const { elements } = this.props;
-      const listOfElements = elements.map((element) => {
-          const {id} = element;
-          return (
-              <Sticker element={element}
-                  key={id}
-                  onMouseDownSticker={this.onMouseDownSticker}
-                  onMouseDownBorder={this.onMouseDownBorder}
-              >
-                <Kanban data={element.elementState} updateData={(data) => this.updateData(id, data)}/>
-              </Sticker>
-          )
-      })
-      return(
-          <div className='canvas'
-              onMouseMove={this.onMouseMove}
-              onMouseUp={this.onMouseUp}
-              onMouseLeave={this.onMouseUp}
-              onMouseDown={this.onMouseDown}
-              style={isElementBorderMoving || isElementMoving ? { backgroundImage: `url(${dotNet})` } : {}}
-          >
-              {/* <img draggable="false" className="noselect" src={dotNet}/> */}
-              {listOfElements}
-          </div>
-      )
+  constructor(props) {
+    super(props);
+    this.canvas = React.createRef();
   }
-  updateData = (id, data) => {
-    console.log('update!!');
+  componentDidMount = () => {
+    const { dispatch } = this.props;
+    dispatch(setCanvasRef(this.canvas));
+    dispatch(updateCanvasRect(this.canvas.current.getBoundingClientRect()))
+    window.addEventListener('resize', () => dispatch(updateCanvasRect(this.canvas.current.getBoundingClientRect())));
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      if(key === 'Delete') {
+        this.deleteSelected();
+      }
+    })
+  }
+  deleteSelected = () => {
+    const { dispatch, selectedStickerId } = this.props;
+
+    dispatch(deleteElement(selectedStickerId));
+  }
+  updateCanvasRect = (canvasRect) => {
+    this.setState({canvasRect});
+  }
+
+  render() {
+    const {  isElementMoving, isElementBorderMoving } = this.state;
+    const { elements, selectedStickerId } = this.props;
+    const listOfElements = elements.map((element) => {
+      let stickerContent;
+        switch (element.type) {
+          case 'text': stickerContent = <TextSticker elementState={element.elementState} updateData={(data) => this.updateData(id, data)}/>; break;
+          case 'kanban': stickerContent = <Kanban elementState={element.elementState} updateData={(data) => this.updateData(id, data)}/>; break;
+          case 'checklist': stickerContent = <Checklist elementState={element.elementState} updateData={(data) => this.updateData(id, data)}/>; break;
+        }
+        const {id} = element;
+        const selected = selectedStickerId === id; // maybe there is a way to refactor
+        return (
+            <Sticker element={element}
+                key={id}
+                onMouseDownSticker={this.onMouseDownSticker}
+                onMouseDownBorder={this.onMouseDownBorder}
+                selected={selected}
+            >
+            {stickerContent}
+            </Sticker>
+        )
+    })
+    return(
+        <div className='canvas' ref={this.canvas}
+          onMouseMove={this.onMouseMove}
+          onMouseUp={this.onMouseUp}
+          onMouseLeave={this.onMouseUp}
+          onMouseDown={this.onMouseDown}
+          style={isElementBorderMoving || isElementMoving ? { backgroundImage: `url(${dotNet})` } : {}}
+        >
+            {/* <img draggable="false" className="noselect" src={dotNet}/> */}
+            {listOfElements}
+        </div>
+    )
+  }
+  updateData = (id, elementState) => {
     const { elements, dispatch } = this.props;
     const element = elements.find(el => el.id === id);
-    const newElement = {...element, elementState: data};
+    const newElement = { ...element, elementState };
     dispatch(updateElement(newElement));
   }
   getElementWidth = (coords) => {
@@ -70,12 +103,13 @@ class Canvas extends React.Component {
     this.mouseDownCanvas(canvasX, canvasY);
   }
   mouseDownCanvas = (canvasX, canvasY) => {
+    this.props.dispatch(selectSticker(null));
     const { dispatch } = this.props;
     const newElement = { 
       coords: {
         x1y1: [canvasX, canvasY],
         x2y2: [canvasX, canvasY],
-      }
+      },
     }
     dispatch(createElement(newElement));
 
@@ -143,7 +177,8 @@ class Canvas extends React.Component {
     const element = {...elements[elements.length-1]};
     const coords = element.coords;
     coords.x2y2 = [canvasX, canvasY];
-    dispatch(updateElement(element))
+    dispatch(updateElement(element));
+
   }
 
   onMouseMove = (e) => {
@@ -156,12 +191,15 @@ class Canvas extends React.Component {
       this.mouseMoveElement(globalX, globalY);
     }
     else if (isCreatingElement) {
+      const { elements, dispatch } = this.props;
+      const element = {...elements[elements.length-1]};
+      dispatch(selectSticker(element.id));
       const [canvasX, canvasY] = this.getCanvasCoords(e);
       this.mouseMoveCreatingElement(canvasX, canvasY);
     }
   }
   onMouseDownSticker = (e, id) => {
-    console.log('mousedownsticker')
+    this.props.dispatch(selectSticker(id));
     const { elements } = this.props;
     const prevCoords = elements.find(x => x.id === id).coords;
     this.setState({
@@ -174,6 +212,7 @@ class Canvas extends React.Component {
   }
   
   onMouseDownBorder = (e, id, border) => {
+    this.props.dispatch(selectSticker(id));
     this.setState({
       elementIdChanging: id,
       isElementBorderMoving: true,
@@ -218,27 +257,41 @@ class Canvas extends React.Component {
         isCreatingElement: false,
       })
     }
-    else if (isCreatingElement) {  
+    else if (isCreatingElement) {
+      
       const element = {...elements[elements.length-1]};
-      element.coords = this.snapCoordinates(element.coords);
-      dispatch(updateElement(element));
+      if(!this.isValidElement(element)) {
+        dispatch(deleteElement(element));
+      }
+      else {
+        element.coords = this.snapCoordinates(element.coords);
+        dispatch(updateElement(element));
+        
+      }
       this.setState({
         isCreatingElement: false,
       })
     }  
   }
-
+  isValidElement = (element) => {
+    const { x1y1, x2y2 } = element.coords;
+    return Math.pow(x1y1[0]-x2y2[0], 2) >= 1600 && Math.pow(x1y1[1]-x2y2[1], 2) >= 1600; 
+  }
   getGlobalCoords = (e) => {
     return [e.clientX, e.clientY]
   }
+  
   getCanvasCoords = (e) => {
-    const rect = e.target.getBoundingClientRect();
+    const { canvasRect } = this.props;
+    const rect = canvasRect;
     return [e.clientX - rect.left, e.clientY - rect.top]
   }
 }
-const mapStateToProps = ({ elements }) => {
+const mapStateToProps = ({ elements, selectedStickerId, canvasRect }) => {
   return {
-    elements
+    elements,
+    selectedStickerId,
+    canvasRect
   }
 }
 

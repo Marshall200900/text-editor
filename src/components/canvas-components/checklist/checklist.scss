@@ -1,0 +1,27 @@
+.checklist {
+  position: absolute;
+  width: calc(100% - 15px);
+  height: calc(100% - 15px);
+  left: 7px;
+  margin-top: 7.5px;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .todo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    .checkbox {
+      width: 20px;
+      height: 20px;
+    }
+    .todo-text {
+      margin-left: 10px;
+    }
+    .done {
+      text-decoration: line-through;
+    }
+  }
+}

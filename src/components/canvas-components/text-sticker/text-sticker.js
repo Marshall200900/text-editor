@@ -2,20 +2,15 @@ import React from 'react';
 import './text-sticker.scss';
 
 class TextSticker extends React.Component {
-  state = { 
-    text: this.props.text,
-  }
   constructor(props) {
     super(props);
     
   }
-
-  onChange = (e) => {
-    this.setState({text: e.target.value});
-  }
+  
 
   render() {
-    return <textarea className="text-sticker" value={this.state.text} onChange={this.onChange}/>
+    const { elementState: {text}, updateData } = this.props;
+    return <textarea className="text-sticker" value={text} onChange={(e) => updateData({...this.props.elementState, text: e.target.value})}/>
   }
 }
 
