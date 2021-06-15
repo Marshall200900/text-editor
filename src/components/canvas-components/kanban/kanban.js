@@ -1,0 +1,94 @@
+import React from 'react';
+import './kanban.scss';
+import LeftArrow from '../../../res/icons/ic24-chevron-left.png';
+import RightArrow from '../../../res/icons/ic24-chevron-right.png';
+
+const KanbanElement = ({ status, text, id, clickLeftArrow, clickRightArrow }) => {
+  const onMouseDown = (e) => {
+    e.stopPropagation();
+  }
+  
+  return (
+    <div className="kanban-element">
+      <button className="btn btn-outline-dark" onMouseDown={onMouseDown} onMouseUp={(e) => clickLeftArrow(e, id)}><img src={LeftArrow}/></button>
+      <span>{text}</span>
+      <button className="btn btn-outline-dark" onMouseDown={onMouseDown} onMouseUp={(e) => clickRightArrow(e, id)}><img src={RightArrow}/></button>
+    </div>
+  )
+}
+
+export default class Kanban extends React.Component {  
+  
+  
+  clickLeftArrow = (e, id) => {
+    const { kanbanData } = this.props.data;
+    const elementId = kanbanData.findIndex(el => el.id === id);
+    const element = {...kanbanData[elementId]};
+
+    switch(element.status) {
+      case 'in progress': element.status = 'not started'; break;
+      case 'done': element.status = 'in progress'; break;
+      default: break;
+    }
+    const newElements = [
+      ...kanbanData.slice(0, elementId),
+      ...kanbanData.slice(elementId + 1),
+      element,
+    ];
+    const newState = {...this.props.data, kanbanData: newElements};
+    
+    this.props.updateData(newState);
+    e.stopPropagation();
+  }
+  clickRightArrow = (e, id) => {
+    const { kanbanData } = this.props.data;
+    const elementId = kanbanData.findIndex(el => el.id === id);
+    const element = {...kanbanData[elementId]};
+
+    switch(element.status) {
+      case 'in progress': element.status = 'done'; break;
+      case 'not started': element.status = 'in progress'; break;
+      default: break;
+    }
+
+    const newElements = [
+      ...kanbanData.slice(0, elementId),
+      ...kanbanData.slice(elementId + 1),
+      element,
+    ];
+    const newState = {...this.props.data, kanbanData: newElements};
+    this.props.updateData(newState);
+    e.stopPropagation();
+    e.preventDefault();
+  }
+  passDataToComponent = (element) => {
+    
+    return (
+    <KanbanElement
+      key={element.id}
+      clickLeftArrow={this.clickLeftArrow}  
+      clickRightArrow={this.clickRightArrow}  
+      {...element}/>
+    )
+  }
+
+  render() {
+    const { kanbanData } = this.props.data;
+    return (
+      <div className="kanban">
+        <div className="kanban-cols col-notstarted">
+          <span>Not started</span>
+          {kanbanData.filter(el => el.status === 'not started').map(this.passDataToComponent)}
+        </div>
+        <div className="kanban-cols col-inprogress">
+          <span>In progress</span>
+          {kanbanData.filter(el => el.status === 'in progress').map(this.passDataToComponent)}
+        </div>
+        <div className="kanban-cols col-done">
+        <span>Done</span>
+          {kanbanData.filter(el => el.status === 'done').map(this.passDataToComponent)}
+        </div>
+      </div>
+    )
+  }
+}

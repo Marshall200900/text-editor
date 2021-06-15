@@ -6,12 +6,12 @@ import FileButton from '../../res/icons/ic24-file.png';
 const LeftPanel = () => {
     return (
         <div className="left-panel window-element">
-            <button className="button btn btn-light">
+            {/* <button className="button btn btn-light">
                 <img src={FigureButton}/>
             </button>
             <button className="button btn btn-light">
                 <img src={FileButton}/>
-            </button>
+            </button> */}
 
         </div>
     )

@@ -2,23 +2,24 @@ import React from 'react';
 import './canvas.scss';
 import dotNet from '../../res/dot-net.png';
 import Sticker from '../sticker';
+import TextSticker from '../canvas-components/text-sticker';
 import { connect } from 'react-redux';
-import {
-  mouseDownSticker,
-  mouseDownElementBorder,
-  mouseMoveElement,
-  mouseMoveBorderOfElement,
-  mouseUp,
-  mouseDownCanvas,
-  mouseMoveCreatingElement
-  } from '../../actions';
-
+import { createElement, updateElement } from '../../actions';
+import Kanban from '../canvas-components/kanban';
 class Canvas extends React.Component {
-
-  static curId = 0;
+  state = {
+    prevMousePosition: null,
+    prevElementCoords: null,
+    elementBorderMoving: null,
+    elementIdChanging: null,
+  
+    isElementBorderMoving: false,
+    isElementMoving: false,
+    isCreatingElement: false,
+  }
   render() {
-      const { elements, isElementMoving, isElementBorderMoving } = this.props;
-
+      const {  isElementMoving, isElementBorderMoving } = this.state;
+      const { elements } = this.props;
       const listOfElements = elements.map((element) => {
           const {id} = element;
           return (
@@ -26,10 +27,11 @@ class Canvas extends React.Component {
                   key={id}
                   onMouseDownSticker={this.onMouseDownSticker}
                   onMouseDownBorder={this.onMouseDownBorder}
-              />
+              >
+                <Kanban data={element.elementState} updateData={(data) => this.updateData(id, data)}/>
+              </Sticker>
           )
       })
-
       return(
           <div className='canvas'
               onMouseMove={this.onMouseMove}
@@ -43,70 +45,200 @@ class Canvas extends React.Component {
           </div>
       )
   }
-  onMouseDown = (e) => {
-    const { dispatch } = this.props;
-    const rect = e.target.getBoundingClientRect();
-    const canvasX = e.clientX - rect.left;
-    const canvasY = e.clientY - rect.top;
-    
-    dispatch(mouseDownCanvas(canvasX, canvasY));
+  updateData = (id, data) => {
+    console.log('update!!');
+    const { elements, dispatch } = this.props;
+    const element = elements.find(el => el.id === id);
+    const newElement = {...element, elementState: data};
+    dispatch(updateElement(newElement));
   }
+  getElementWidth = (coords) => {
+    return coords.x2y2[0] - coords.x1y1[0];
+  }
+  getElementHeight = (coords) => {
+    return coords.x2y2[1] - coords.x1y1[1];
+  }
+  snapCoordinates = (coords) => {
+    const newCoords = {
+      x1y1: [coords.x1y1[0] - coords.x1y1[0] % 40 + 20, coords.x1y1[1] - coords.x1y1[1] % 40 + 20],
+      x2y2: [coords.x2y2[0] - coords.x2y2[0] % 40 + 20, coords.x2y2[1] - coords.x2y2[1] % 40 + 20]
+    };
+    return newCoords;
+  }
+  onMouseDown = (e) => {
+    const [canvasX, canvasY] = this.getCanvasCoords(e);
+    this.mouseDownCanvas(canvasX, canvasY);
+  }
+  mouseDownCanvas = (canvasX, canvasY) => {
+    const { dispatch } = this.props;
+    const newElement = { 
+      coords: {
+        x1y1: [canvasX, canvasY],
+        x2y2: [canvasX, canvasY],
+      }
+    }
+    dispatch(createElement(newElement));
 
+    this.setState({
+      isCreatingElement: true,
+      prevMousePosition: [canvasX, canvasY]
+    })
+  }
+  mouseMoveBorderOfElement = (globalX, globalY) => {
+    const {elementBorderMoving, prevMousePosition, elementIdChanging } = this.state;
+      const { elements, dispatch } = this.props;
+
+      let offset = [globalX-prevMousePosition[0], globalY-prevMousePosition[1]];
+      const element = elements.find(x => x.id === elementIdChanging);
+      const coords = element.coords;
+      let newCoords;
+      switch(elementBorderMoving) {
+        case 'left-border': {
+          const new_x1y1 = [coords.x1y1[0]+offset[0], coords.x1y1[1]];
+          newCoords = {...coords, x1y1: new_x1y1};
+        }
+        break;
+        case 'right-border': {
+          const new_x2y2 = [coords.x2y2[0]+offset[0], coords.x2y2[1]];
+          newCoords = {...coords, x2y2: new_x2y2};
+        }
+        break;
+        case 'top-border': {
+          const new_x1y1 = [coords.x1y1[0], coords.x1y1[1]+offset[1]];
+          newCoords = {...coords, x1y1: new_x1y1};
+        }
+        break;
+        case 'bottom-border': {
+            const new_x2y2 = [coords.x2y2[0], coords.x2y2[1]+offset[1]];
+            newCoords = {...coords, x2y2: new_x2y2};
+          }
+          break;
+        }
+        
+        if(this.getElementWidth(newCoords) <= 40 || this.getElementHeight(newCoords) <= 40) {
+        newCoords = {...coords};
+      }
+      dispatch(updateElement({...element, id: elementIdChanging, coords: newCoords}))
+      this.setState({
+        prevMousePosition: [globalX, globalY]
+      })
+  }
+  mouseMoveElement = (globalX, globalY) => {
+    const { prevMousePosition, elementIdChanging } = this.state;
+    const { elements, dispatch } = this.props;
+    const element = elements.find(x => x.id === elementIdChanging);
+    const coords = element.coords;
+    const offset = [globalX-prevMousePosition[0], globalY-prevMousePosition[1]];
+    const newCoords = {
+      x1y1: [coords.x1y1[0]+offset[0], coords.x1y1[1]+offset[1]],
+      x2y2: [coords.x2y2[0]+offset[0], coords.x2y2[1]+offset[1]],
+    };
+    dispatch(updateElement({...element, id: elementIdChanging, coords: newCoords}))
+    this.setState({
+      prevMousePosition: [globalX, globalY],
+    })
+  }
+  mouseMoveCreatingElement = (canvasX, canvasY) => {
+    const { elements, dispatch } = this.props;
+    const element = {...elements[elements.length-1]};
+    const coords = element.coords;
+    coords.x2y2 = [canvasX, canvasY];
+    dispatch(updateElement(element))
+  }
 
   onMouseMove = (e) => {
-    const { isElementMoving, isElementBorderMoving, isCreatingElement, dispatch } = this.props;
-    const globalX = e.clientX;
-    const globalY = e.clientY;
-
+    const { isElementMoving, isElementBorderMoving, isCreatingElement } = this.state;
+    const [globalX, globalY] = this.getGlobalCoords(e);
     if(isElementBorderMoving) {
-      dispatch(mouseMoveBorderOfElement(globalX, globalY));
+      this.mouseMoveBorderOfElement(globalX, globalY);
     }
     else if (isElementMoving) {
-      dispatch(mouseMoveElement(globalX, globalY));
+      this.mouseMoveElement(globalX, globalY);
     }
-    else if (isCreatingElement) {  
-      const rect = e.target.getBoundingClientRect();
-      const canvasX = e.clientX - rect.left;
-      const canvasY = e.clientY - rect.top;
-      
-      dispatch(mouseMoveCreatingElement(canvasX, canvasY));
-
-
+    else if (isCreatingElement) {
+      const [canvasX, canvasY] = this.getCanvasCoords(e);
+      this.mouseMoveCreatingElement(canvasX, canvasY);
     }
-
   }
   onMouseDownSticker = (e, id) => {
-    const { dispatch } = this.props;
-    const globalX = e.clientX;
-    const globalY = e.clientY;
-
-    dispatch(mouseDownSticker(globalX, globalY, id));
-
+    console.log('mousedownsticker')
+    const { elements } = this.props;
+    const prevCoords = elements.find(x => x.id === id).coords;
+    this.setState({
+      elementIdChanging: id,
+      isElementMoving: true,
+      prevElementCoords: prevCoords,
+      prevMousePosition: this.getGlobalCoords(e)
+    })
     e.stopPropagation();
   }
   
   onMouseDownBorder = (e, id, border) => {
-    const { dispatch } = this.props;
-    const globalX = e.clientX;
-    const globalY = e.clientY;
-    dispatch(mouseDownElementBorder(globalX, globalY, id, border));
-
+    this.setState({
+      elementIdChanging: id,
+      isElementBorderMoving: true,
+      elementBorderMoving: border,
+      prevMousePosition : this.getGlobalCoords(e),
+    })
     e.stopPropagation();
-
   }
   onMouseUp = () => {
-    const { dispatch } = this.props;
-    dispatch(mouseUp());
+    const { isElementMoving, isElementBorderMoving, isCreatingElement, elementIdChanging, prevElementCoords } = this.state;
+    const { elements, dispatch } = this.props;
+    const element = elements.find(x => x.id === elementIdChanging);
+    if(isElementBorderMoving) {
+      const coords = element.coords;
+      let newCoords = this.snapCoordinates(coords);
+      if(newCoords.x1y1[0] < 20 ||
+          newCoords.x1y1[1] < 20 ||
+          newCoords.x2y2[0] > 780) {
+              newCoords = prevElementCoords;
+      }
+      dispatch(updateElement({...element, id: elementIdChanging, coords: newCoords}));
+      this.setState({
+        isElementMoving: false,
+        isElementBorderMoving: false,
+      })
+    }
+    else if (isElementMoving) {
+      const coords = element.coords;
+      let newCoords;
+      if(coords.x1y1[0] < 20 ||
+        coords.x1y1[1] < 20 ||
+        coords.x2y2[0] > 780) {
+        newCoords = prevElementCoords;
+      }
+      else {
+        newCoords = this.snapCoordinates(coords);
+      }
+      dispatch(updateElement({...element, id: elementIdChanging, coords: newCoords}));
+      this.setState({
+        isElementBorderMoving: false,
+        isElementMoving: false,
+        isCreatingElement: false,
+      })
+    }
+    else if (isCreatingElement) {  
+      const element = {...elements[elements.length-1]};
+      element.coords = this.snapCoordinates(element.coords);
+      dispatch(updateElement(element));
+      this.setState({
+        isCreatingElement: false,
+      })
+    }  
+  }
+
+  getGlobalCoords = (e) => {
+    return [e.clientX, e.clientY]
+  }
+  getCanvasCoords = (e) => {
+    const rect = e.target.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top]
   }
 }
-
-
-const mapStateToProps = ({ elements, isElementMoving, isElementBorderMoving, isCreatingElement }) => {
+const mapStateToProps = ({ elements }) => {
   return {
-    elements,
-    isElementMoving,
-    isElementBorderMoving,
-    isCreatingElement
+    elements
   }
 }
 

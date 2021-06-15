@@ -36,7 +36,7 @@ export default class Sticker extends React.Component {
             style={style}
             onMouseDown={(e) => this.props.onMouseDownSticker(e, id)}
         >
-            <textarea className="text-input"/>
+            {this.props.children}
 
             {listOfBorders}
 
