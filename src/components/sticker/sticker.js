@@ -1,8 +1,12 @@
 import React from 'react';
-
+import OnForeground from '../../res/icons/ic24-redo.png';
+import Color from '../../res/icons/ic24-opacity.png';
+import Delete from '../../res/icons/ic24-delete.png';
 import './sticker.scss';
+import { connect } from 'react-redux';
+import { deleteElement, stickerOnForeground, updateElement } from '../../actions';
 
-export default class Sticker extends React.Component {
+class Sticker extends React.Component {
   colors = [
     '#8CAAFF',
     '#E5B5FF',
@@ -13,12 +17,17 @@ export default class Sticker extends React.Component {
     super(props);
 
     this.state = {
-      color: this.colors[Math.floor(Math.random() * 4)]
+      isPalleteOpened: false,
     }
   }
-
+  changeColor = (color) => {
+    const { dispatch, element } = this.props;
+    const newElement = {...element, color: color}
+    dispatch(updateElement(newElement));
+    this.palleteOpened(false)
+  }
   render() {
-    const { element, selected } = this.props;
+    const { element, selected, dispatch } = this.props;
     const {id, coords} = element;
     const listOfBorders = [
         this.getBorderJSX(element, 'left-border', 0),
@@ -27,17 +36,28 @@ export default class Sticker extends React.Component {
         this.getBorderJSX(element, 'bottom-border', 3),
     ];
     const style = this.setCoordinates(coords);
-    style.backgroundColor = this.state.color;
+    style.backgroundColor = element.color;
+    const { colors, changeColor } = this;
     return (
         <div className={`sticker ${selected ? 'selected': ''}`} 
             style={style}
             onMouseDown={(e) => this.props.onMouseDownSticker(e, id)}
         >
             {this.props.children}
-
+            
+            <div className={`pallete ${this.state.isPalleteOpened ? 'opened': ''}`}>
+              <div className="color" onClick={() => changeColor(colors[0])} style={{backgroundColor: colors[0]}}></div>
+              <div className="color" onClick={() => changeColor(colors[1])} style={{backgroundColor: colors[1]}}></div>
+              <div className="color" onClick={() => changeColor(colors[2])} style={{backgroundColor: colors[2]}}></div>
+              <div className="color" onClick={() => changeColor(colors[3])} style={{backgroundColor: colors[3]}}></div>
+            </div>
             {listOfBorders}
-
-
+            {selected ? <div className="sticker-settings">
+              <div className="setting" onClick={() => dispatch(stickerOnForeground(id))}><img src={OnForeground}/></div>
+              <div className="setting" onClick={() => this.palleteOpened(!this.state.isPalleteOpened)}><img src={Color}/></div>
+              <div className="setting" onClick={() => dispatch(deleteElement(id))}><img src={Delete}/></div>
+            </div> : null}
+            
             {/* TO BE IMPLEMENTED */}
             {/* <div className="border bottom-border"/>
             <div className="border bottom-border"/>
@@ -58,7 +78,11 @@ export default class Sticker extends React.Component {
           />
       )
   }
-  
+  palleteOpened = (opened) => {
+    this.setState({isPalleteOpened: opened});
+  }
+
+
   setBorderParams = (coords, border) => {
       const width = coords.x2y2[0]-coords.x1y1[0];
       const height = coords.x2y2[1]-coords.x1y1[1];
@@ -110,3 +134,5 @@ export default class Sticker extends React.Component {
       }
   }
 }
+
+export default connect()(Sticker);

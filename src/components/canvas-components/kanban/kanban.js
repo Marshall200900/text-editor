@@ -2,6 +2,7 @@ import React from 'react';
 import './kanban.scss';
 import LeftArrow from '../../../res/icons/ic24-chevron-left.png';
 import RightArrow from '../../../res/icons/ic24-chevron-right.png';
+import Plus from '../../../res/icons/ic24-plus.png';
 
 const KanbanElement = ({ status, text, id, clickLeftArrow, clickRightArrow }) => {
   const onMouseDown = (e) => {
@@ -19,7 +20,9 @@ const KanbanElement = ({ status, text, id, clickLeftArrow, clickRightArrow }) =>
 
 export default class Kanban extends React.Component {  
   
-  
+  state = {
+    task: '',
+  }
   clickLeftArrow = (e, id) => {
     const { kanbanData } = this.props.elementState;
     const elementId = kanbanData.findIndex(el => el.id === id);
@@ -74,34 +77,27 @@ export default class Kanban extends React.Component {
   componentDidMount = () => {
     const { kanbanData } = this.props.elementState;
     if(kanbanData === undefined) {
-      this.props.updateData({...this.props.elementState, kanbanData: [
-        {
-          id: 0,
-          status: 'not started',
-          text: 'do chores'
-        },
-        {
-          id: 1,
-          status: 'in progress',
-          text: 'make a sandwitch'
-        },
-        {
-          id: 2,
-          status: 'done',
-          text: 'have a shower'
-        },
-        {
-          id: 3,
-          status: 'in progress',
-          text: 'buy milk'
-        }]});
+      this.props.updateData({...this.props.elementState, currentId: 0, kanbanData: []});
     }
+  }
+  onInputChange = (e) => {
+    this.setState({ task: e.target.value })
+  }
+
+  addTask = (task) => {
+    const { kanbanData, currentId } = this.props.elementState;
+    const newTask = { id: currentId, status: 'not started', text: task };
+    const newKanbanData = [...kanbanData, newTask];
+    this.props.updateData({...this.props.elementState, currentId: currentId + 1, kanbanData: newKanbanData});
+    this.setState({task: ''})
   }
   render() {
     const { kanbanData } = this.props.elementState;
     if(kanbanData === undefined) return null;
     return (
       <div className="kanban">
+        <div className="add-task" onClick={() => this.addTask(this.state.task)}><img src={Plus}/></div>
+        <input className="add-task-input" type="text" value={this.state.task} onChange={(e) => this.onInputChange(e)}/>
         <div className="kanban-cols col-notstarted">
           <span>Not started</span>
           {kanbanData.filter(el => el.status === 'not started').map(this.passDataToComponent)}

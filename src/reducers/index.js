@@ -4,12 +4,9 @@ const initialState = {
   elements : [
     
   ],
-  openedPanel: null,
+  openedPanel: 'figures',
   selectedStickerId: null,
 }
-
-
-
 const reducer = (state = initialState, action) => {
   switch(action.type) {
     case 'SET_CANVAS_REF': {
@@ -43,10 +40,34 @@ const reducer = (state = initialState, action) => {
       }
     }
     case 'READ_STATE_FROM_FILE':
-      return action.payload.data;
+      const { currentId, elements } = action.payload.data;
+      return {
+        ...state,
+        currentId, 
+        elements
+      }
+    case 'STICKER_ON_FOREGROUND': {
+      const { elements } = state;
+      const idx = elements.findIndex(el => el.id === action.payload.stickerId);
+
+      const newElements = [
+        ...elements.slice(0, idx),
+        ...elements.slice(idx + 1),
+        elements[idx]
+      ]
+
+      return {
+        ...state,
+        elements: newElements
+      }
+    }
     case 'CREATE_ELEMENT': {
       const { elements, currentId, currentTool } = state;
-      const newElement = {...action.payload.newElement, type: currentTool, id: currentId, elementState: {}}
+      const newElement = {...action.payload.newElement, 
+        type: currentTool, 
+        id: currentId,
+        color: '#8CAAFF',
+        elementState: {}}
       const newElements = [
         ...elements, newElement
       ];
@@ -54,6 +75,7 @@ const reducer = (state = initialState, action) => {
         ...state,
         elements: newElements,
         currentId: currentId + 1,
+        selectedStickerId: currentId
       }
     }
     case 'DELETE_ELEMENT': {

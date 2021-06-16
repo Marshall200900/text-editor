@@ -193,7 +193,6 @@ class Canvas extends React.Component {
     else if (isCreatingElement) {
       const { elements, dispatch } = this.props;
       const element = {...elements[elements.length-1]};
-      dispatch(selectSticker(element.id));
       const [canvasX, canvasY] = this.getCanvasCoords(e);
       this.mouseMoveCreatingElement(canvasX, canvasY);
     }
@@ -261,7 +260,7 @@ class Canvas extends React.Component {
       
       const element = {...elements[elements.length-1]};
       if(!this.isValidElement(element)) {
-        dispatch(deleteElement(element));
+        dispatch(deleteElement(element.id));
       }
       else {
         element.coords = this.snapCoordinates(element.coords);
@@ -275,7 +274,7 @@ class Canvas extends React.Component {
   }
   isValidElement = (element) => {
     const { x1y1, x2y2 } = element.coords;
-    return Math.pow(x1y1[0]-x2y2[0], 2) >= 1600 && Math.pow(x1y1[1]-x2y2[1], 2) >= 1600; 
+    return x1y1[1]-x2y2[1]<=0 && x1y1[0]-x2y2[0]<=0 && Math.pow(x1y1[0]-x2y2[0], 2) >= 1600 && Math.pow(x1y1[1]-x2y2[1], 2) >= 1600; 
   }
   getGlobalCoords = (e) => {
     return [e.clientX, e.clientY]

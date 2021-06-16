@@ -1,14 +1,56 @@
 .sticker {
   position: absolute;
   background-color: #BEF3CA;
+  overflow: hidden;
+  border: 3px solid transparent;
+  box-sizing: content-box;
+  border-radius: 5px;
   &.selected {
     border: 3px solid rgb(41, 39, 39);
-    border-radius: 5px;
+  }
+  .pallete {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    right: 27px;
+    top: 40px;
+    padding: 4px;
+    border-radius: 3px;
+    background-color: white;
+
+    &.opened {
+      display: flex;
+    }
+
+    .color {
+      width: 20px;
+      height: 20px;
+      border-radius: 2px;
+      margin-top: 2px;
+      &:hover {
+        border: 2px solid;
+      }
+    }
   }
 
+  .sticker-settings {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    top: 5px;
+    right: 5px;
+    .setting {
+      opacity: 0.2;
+    }
+    .setting:hover {
+      border-radius: 3px;
+      background-color: rgb(255, 255, 255);
+      opacity: 1;
+    }
+  }
 
   .sticker-border {
-      position: relative;
+    position: relative;
   }
   
   .left-border {

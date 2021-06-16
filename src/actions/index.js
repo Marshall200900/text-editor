@@ -35,6 +35,13 @@ const deleteElement = (elementId) => {
     }
   }
 }
+const stickerOnForeground = (stickerId) => {
+  return {
+    type: 'STICKER_ON_FOREGROUND',
+    payload: {stickerId}
+  }
+}
+
 const readStateFromFile = (data) => {
   return {
     type: 'READ_STATE_FROM_FILE',
@@ -65,6 +72,7 @@ const selectSticker = (stickerId) => {
 }
 
 export {
+  stickerOnForeground,
   setCanvasRef,
   updateCanvasRect,
   selectSticker,

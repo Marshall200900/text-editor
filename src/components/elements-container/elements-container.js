@@ -5,9 +5,9 @@ import Check from '../../res/icons/ic24-check.png';
 import Kanban from '../../res/icons/ic24-calendar.png';
 import { switchTool } from '../../actions';
 import './elements-container.scss';
-const ButtonSwitchTool = ({tool, image, switchTool}) => {
+const ButtonSwitchTool = ({tool, image, switchTool, className}) => {
   return (
-    <div className="btn btn-outline-dark" onClick={() => switchTool(tool)}>
+    <div className={`btn btn-outline-dark ${className}`} onClick={() => switchTool(tool)}>
       <img src={image}/>
     </div>
   )
@@ -19,21 +19,23 @@ class ElementsContainer extends React.Component {
   }
 
   render() {
-    
-    const { elements } = this.props;
+    const { elements, currentTool } = this.props;
+
+
     const switchTool = this.switchTool;
     return (
         <div className="elements-container">
-          <ButtonSwitchTool tool={'text'} image={Text} {...{switchTool}}/>
-          <ButtonSwitchTool tool={'kanban'} image={Kanban} {...{switchTool}}/>
-          <ButtonSwitchTool tool={'checklist'} image={Check} {...{switchTool}}/>
+          <ButtonSwitchTool tool={'text'} image={Text} {...{switchTool}} className={currentTool === 'text' ? 'selected': ''}/>
+          <ButtonSwitchTool tool={'kanban'} image={Kanban} {...{switchTool}} className={currentTool === 'kanban' ? 'selected': ''}/>
+          <ButtonSwitchTool tool={'checklist'} image={Check} {...{switchTool}} className={currentTool === 'checklist' ? 'selected': ''}/>
         </div>
     )
   }
 }
-const mapStateToProps = ({elements}) => {
+const mapStateToProps = ({elements, currentTool}) => {
   return {
-    elements
+    elements,
+    currentTool
   }
 }
 

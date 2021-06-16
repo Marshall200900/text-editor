@@ -3,10 +3,26 @@ import './left-panel.scss';
 import FigureButton from '../../res/icons/ic24-play.png';
 import FileButton from '../../res/icons/ic24-file.png';
 import { connect } from 'react-redux';
-import { switchPanel } from '../../actions';
+import { switchPanel, updateCanvasRect } from '../../actions';
 
-const LeftPanel = ({openedPanel, dispatch}) => {
-  const openPanel = (panel) => {
+class LeftPanel extends React.Component {
+  render() {
+    const {openedPanel, dispatch, canvasRef} = this.props;
+    return (
+    
+      <div className="left-panel window-element">
+          <button className="button btn btn-outline-dark" onClick={() => this.openPanel('figures')}>
+              <img src={FigureButton}/>
+          </button>
+          <button className="button btn btn-outline-dark" disabled>
+              <img src={FileButton}/>
+          </button>
+      </div>
+    )
+  }
+  
+  openPanel = (panel) => {
+    const { openedPanel, dispatch } = this.props;
     if(openedPanel === panel){
       dispatch(switchPanel(null));
     }
@@ -14,23 +30,17 @@ const LeftPanel = ({openedPanel, dispatch}) => {
       dispatch(switchPanel(panel));
     }
   }
+  componentDidUpdate = () => {
 
-  return (
-      <div className="left-panel window-element">
-          <button className="button btn btn-outline-dark" onClick={() => openPanel('figures')}>
-              <img src={FigureButton}/>
-          </button>
-          <button className="button btn btn-outline-dark" disabled>
-              <img src={FileButton}/>
-          </button>
-      </div>
-  )
+  }  
+
   
 
 }
-const mapStateToProps = ({openedPanel}) => {
+const mapStateToProps = ({openedPanel, canvasRef}) => {
   return {
-    openedPanel
+    openedPanel, 
+    canvasRef
   }
 }
 

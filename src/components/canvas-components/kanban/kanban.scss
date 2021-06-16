@@ -9,9 +9,29 @@
   flex-direction: row;
 
   .kanban-cols {
+    margin-top: 35px;
     border: 1px solid;
     flex-grow: 1;
     padding: 5px;
+  }
+  .add-task {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    &:hover {
+      background-color: white;
+      border-radius: 3px;
+    }
+  }
+  
+  .add-task-input {
+    position: absolute;
+    left: 30px;
+    top: 0px;
+    background: none;
+    border-bottom: 2px solid black;
+    outline: none;
+    box-shadow: none;
   }
 }
 
