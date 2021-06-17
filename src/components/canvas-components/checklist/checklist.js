@@ -1,28 +1,17 @@
 import React from 'react';
 import './checklist.scss';
+import Plus from '../../../res/icons/ic24-plus.png';
 
 class Checklist extends React.Component {
   
-
+  state = {
+    task: '',
+  }
   componentDidMount = () => {
     const { elementState } = this.props;
-    this.props.updateData({ ...elementState, todos: [
-      {
-        id: 0,
-        text: 'do dishes',
-        checked: false,
-      },
-      {
-        id: 1,
-        text: 'make the text editor',
-        checked: false,
-      },
-      {
-        id: 2,
-        text: 'get some sleep',
-        checked: false,
-      }
-    ] });
+    if(elementState.todos === undefined) {
+      this.props.updateData({ ...elementState, currentId: 0,  todos: [] });
+    }
     
   }
   onChecked = (id) => {
@@ -36,8 +25,19 @@ class Checklist extends React.Component {
       newTodo,
       ...todos.slice(id + 1)
     ];
-    console.log(newTodos);
     return {...elementState, todos: newTodos}
+  }
+  addTask = (task) => {
+    const { currentId, todos } = this.props.elementState;
+
+    const newTask = { id: currentId, checked: false, text: task };
+    const newTodos = [...todos, newTask];
+    console.log({...this.props.elementState, currentId: currentId + 1, todos: newTodos});
+    this.props.updateData({...this.props.elementState, currentId: currentId + 1, todos: newTodos});
+    this.setState({task: ''});  
+  }
+  onInputChange = (e) => {
+    this.setState({task: e.target.value})
   }
   render() {
     const { elementState } = this.props;
@@ -55,6 +55,10 @@ class Checklist extends React.Component {
     })
     return (
       <div className="checklist">
+          <div className="add">
+            <div className="add-task" onClick={() => this.addTask(this.state.task)}><img src={Plus}/></div>
+            <input className="add-task-input" type="text" value={this.state.task} onChange={(e) => this.onInputChange(e)}/>
+          </div>
         {todosComponents}
       </div>
     )
