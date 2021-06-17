@@ -41,6 +41,7 @@ const reducer = (state = initialState, action) => {
     }
     case 'READ_STATE_FROM_FILE':
       const { currentId, elements } = action.payload.data;
+      console.log(elements);
       return {
         ...state,
         currentId, 

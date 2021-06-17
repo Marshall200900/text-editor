@@ -4,6 +4,9 @@ import { readStateFromFile } from '../../actions';
 import './menubar.scss';
 
 class MenuBar extends React.Component {
+  state = {
+    value: '',
+  }
   save = () => {
     const fs = require('fs');
     try { 
@@ -11,12 +14,13 @@ class MenuBar extends React.Component {
       const dataToSave = { currentId, elements };
 
       fs.writeFileSync('data.json', JSON.stringify(dataToSave), 'utf-8'); 
-      console.log('Successfully saved');
+      alert('Successfully saved!');
     }
     catch(e) { alert('Failed to save the file: ' + e); }
   }
   open = (path) => {
     const { dispatch } = this.props;
+    console.log('here');
     const fs = require('fs');
     try {
       const data = fs.readFileSync(path, 'utf8');
@@ -38,6 +42,7 @@ class MenuBar extends React.Component {
     const onChange = (e) => {
       const { path } = e.target.files[0];
       this.open(path);
+      this.inputFile.current.value = "";
     }
     return (
         <div className="menubar">
